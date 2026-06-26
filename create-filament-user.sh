@@ -19,7 +19,7 @@ else
         App\Models\User::create([
             'name' => 'Admin',
             'email' => '$EMAIL',
-            'password' => bcrypt('$PASSWORD'),
+            'password' => '$PASSWORD',
         ]);
     "
     echo "✅ Пользователь создан."

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\CuisineTypeResource;
+use App\Http\Resources\Api\V1\CuisineTypeResourceCollection;
 use App\Models\CuisineType;
 
 class CuisineTypeController extends Controller
@@ -11,6 +11,6 @@ class CuisineTypeController extends Controller
     public function index()
     {
         $types = CuisineType::paginate(100);
-        return CuisineTypeResource::collection($types);
+        return new CuisineTypeResourceCollection($types);
     }
 }

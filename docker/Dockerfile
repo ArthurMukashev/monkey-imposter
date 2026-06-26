@@ -44,16 +44,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 WORKDIR /var/www
 
 # Копирование файлов проекта (зависимостей)
-COPY ../composer.json ../composer.lock ./
+COPY composer.json composer.lock ./
 RUN composer install --no-scripts --no-autoloader --no-dev --prefer-dist
 
 # Копирование остального кода
-COPY ../ ./
+COPY . ./
 
-# Генерация автозагрузки и оптимизация
-RUN composer dump-autoload --optimize \
-    && composer run-script post-autoload-dump \
-    && php artisan optimize:clear
+# Генерация автозагрузки без команд, которым нужна живая БД во время build
+RUN composer dump-autoload --optimize --no-scripts
 
 # Настройка прав
 RUN chown -R www-data:www-data /var/www \

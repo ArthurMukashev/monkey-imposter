@@ -28,15 +28,23 @@ class PlaceDetailedResource extends JsonResource
             'schedule' => $this->schedule,
             'images' => $this->getAllImages(),
             'tags' => TagResource::collection($this->whenLoaded('tags')),
-            'seo' => [
-                'title' => $this->seo_title,
-                'description' => $this->seo_description,
-                'canonicalPath' => $this->seo_canonical_path,
-            ],
+            'seo' => $this->getSeo(),
         ];
 
-        // Удаляем null-поля для чистоты ответа (по желанию)
-        return array_filter($data, fn ($value) => $value !== null);
+        return $data;
+    }
+
+    private function getSeo()
+    {
+        if ($this->seo_title === null && $this->seo_description === null && $this->seo_canonical_path === null) {
+            return null;
+        }
+
+        return [
+            'title' => $this->seo_title ?? $this->title,
+            'description' => $this->seo_description ?? $this->short_description,
+            'canonicalPath' => $this->seo_canonical_path ?? '/places/'.$this->slug,
+        ];
     }
 
     private function getAllImages()
