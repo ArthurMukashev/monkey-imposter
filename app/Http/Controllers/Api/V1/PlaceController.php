@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PlaceDetailedResource;
-use App\Http\Resources\Api\V1\PlaceResourceCollection;
+use App\Http\Resources\Api\V1\PlaceResource;
 use App\Models\Place;
 use Illuminate\Http\Request;
 
@@ -13,7 +13,7 @@ class PlaceController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->has('section') && ! in_array($request->section, ['tourism', 'active', 'gastronomy'], true)) {
+        if ($request->has('section') && !in_array($request->section, ['tourism', 'active', 'gastronomy'], true)) {
             return response()->json([
                 'error' => [
                     'code' => 'bad_request',
@@ -32,17 +32,17 @@ class PlaceController extends Controller
         }
 
         if ($request->has('city')) {
-            $query->whereHas('city', fn ($q) => $q->where('slug', $request->city));
+            $query->whereHas('city', fn($q) => $q->where('slug', $request->city));
         }
 
         if ($request->has('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
+            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
         }
 
         if ($request->has('tags')) {
             $tags = explode(',', $request->tags);
             foreach ($tags as $tagSlug) {
-                $query->whereHas('tags', fn ($q) => $q->where('slug', $tagSlug));
+                $query->whereHas('tags', fn($q) => $q->where('slug', $tagSlug));
             }
         }
 
@@ -58,8 +58,7 @@ class PlaceController extends Controller
         $limit = min($request->input('limit', 20), 100);
 
         $places = $query->paginate($limit, ['*'], 'page', $page);
-
-        return new PlaceResourceCollection($places);
+        return PlaceResource::collection($places);
     }
 
     public function show($slug)

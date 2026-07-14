@@ -10,7 +10,6 @@ class HealthController extends Controller
     public function index(Request $request)
     {
         $source = $request->input('source', 'remote');
-
         $data = [
             'status' => 'ok',
             'source' => $source,
@@ -18,7 +17,9 @@ class HealthController extends Controller
         ];
 
         if ($source === 'local') {
-            $data['lastSyncAt'] = now()->toIso8601String(); // можно заменить на реальную дату
+            // Можно хранить время последней синхронизации в кеше или БД
+            $lastSync = cache('last_sync_time', now()->subDay()->toIso8601String());
+            $data['lastSyncAt'] = $lastSync;
         }
 
         return response()->json(['data' => $data]);
