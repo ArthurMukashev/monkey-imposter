@@ -12,6 +12,7 @@ class CuisineTypeForm
         return $schema
             ->components([
                 Forms\Components\TextInput::make('title')
+                    ->label('Название')
                     ->required()
                     ->maxLength(255)
                     ->live()
@@ -21,8 +22,10 @@ class CuisineTypeForm
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 Forms\Components\Textarea::make('short_description')
+                    ->label('Краткое описание')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('sort_order')
+                    ->label('Порядок сортировки')
                     ->numeric()
                     ->default(0),
             ]);

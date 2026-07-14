@@ -14,9 +14,12 @@ class TagsTable
     {
         return $table
             ->columns([
-                Columns\TextColumn::make('title')->searchable()->sortable(),
+                Columns\TextColumn::make('title')
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
                 Columns\TextColumn::make('slug')->searchable()->sortable(),
-                Columns\ColorColumn::make('color'),
+                Columns\ColorColumn::make('color')->label('Цвет'),
             ])
             ->filters([
                 //

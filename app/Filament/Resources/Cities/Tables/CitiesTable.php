@@ -14,9 +14,14 @@ class CitiesTable
     {
         return $table
             ->columns([
-                Columns\TextColumn::make('title')->searchable()->sortable(),
+                Columns\TextColumn::make('title')
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
                 Columns\TextColumn::make('slug')->searchable(),
-                Columns\TextColumn::make('sort_order')->sortable(),
+                Columns\TextColumn::make('sort_order')
+                    ->label('Порядок сортировки')
+                    ->sortable(),
             ])
             ->filters([
                 //

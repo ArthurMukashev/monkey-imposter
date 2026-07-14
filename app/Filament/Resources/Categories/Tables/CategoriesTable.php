@@ -11,14 +11,22 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                Columns\TextColumn::make('title')->searchable()->sortable(),
+                Columns\TextColumn::make('title')
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
                 Columns\TextColumn::make('slug')->searchable(),
-                Columns\TextColumn::make('section')->badge()->colors([
-                    'primary' => 'tourism',
-                    'success' => 'active',
-                    'warning' => 'gastronomy',
-                ]),
-                Columns\TextColumn::make('sort_order')->sortable(),
+                Columns\TextColumn::make('section')
+                    ->label('Категория')
+                    ->badge()
+                    ->colors([
+                        'primary' => 'tourism',
+                        'success' => 'active',
+                        'warning' => 'gastronomy',
+                    ]),
+                Columns\TextColumn::make('sort_order')
+                    ->label('Порядок сортировки')
+                    ->sortable(),
             ])
             ->filters([
                 Filters\SelectFilter::make('section')

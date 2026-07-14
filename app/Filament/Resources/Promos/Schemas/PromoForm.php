@@ -13,6 +13,7 @@ class PromoForm
         return $schema
             ->components([
                 Select::make('placement')
+                    ->label('Где разместить')
                     ->options([
                         'home' => 'Главная',
                         'section' => 'Страница раздела',
@@ -20,8 +21,12 @@ class PromoForm
                         'kiosk-home' => 'Kiosk старт',
                     ])
                     ->required(),
-                TextInput::make('priority')->numeric()->default(0),
+                TextInput::make('priority')
+                    ->label('Порядок размещения (приоритет)')
+                    ->numeric()
+                    ->default(0),
                 Select::make('section')
+                    ->label('Категория')
                     ->options([
                         'tourism' => 'Туризм',
                         'active' => 'Активный отдых',
@@ -29,13 +34,23 @@ class PromoForm
                     ])
                     ->nullable()
                     ->visible(fn(callable $get) => $get('placement') === 'section'),
-                DateTimePicker::make('active_from')->timezone('+05:00'),
-                DateTimePicker::make('active_until')->timezone('+05:00')->after('active_from'),
-                TextInput::make('title')->required(),
-                TextInput::make('teaser')->required(),
+                DateTimePicker::make('active_from')
+                    ->label('Активно с')
+                    ->timezone('+05:00'),
+                DateTimePicker::make('active_until')
+                    ->label('Активно до')
+                    ->timezone('+05:00')
+                    ->after('active_from'),
+                TextInput::make('title')
+                    ->label('Название')
+                    ->required(),
+                TextInput::make('teaser')
+                    ->label('Тизер')
+                    ->required(),
 
                 // Target
                 Select::make('target_type')
+                    ->label('Тип объекта')
                     ->options([
                         'place' => 'Объект',
                         'section' => 'Раздел',
@@ -56,11 +71,16 @@ class PromoForm
                 Section::make('Изображение')
                     ->schema([
                         FileUpload::make('image.url')
+                            ->label('URL')
                             ->image()
                             ->directory('promos')
                             ->required(),
-                        TextInput::make('image.alt')->required(),
-                        TextInput::make('image.title')->required(),
+                        TextInput::make('image.alt')
+                            ->label('Альт (отображать, если изображение не загрузилось)')
+                            ->required(),
+                        TextInput::make('image.title')
+                            ->label('Название')
+                            ->required(),
                     ]),
             ]);
     }

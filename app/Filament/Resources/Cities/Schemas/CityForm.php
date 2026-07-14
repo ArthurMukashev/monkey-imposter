@@ -11,10 +11,16 @@ class CityForm
     {
         return $schema
             ->components([
-                Components\TextInput::make('title')->required()->live()
+                Components\TextInput::make('title')
+                    ->label('Название')
+                    ->required()
+                    ->live()
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Str::slug($state))),
                 Components\TextInput::make('slug')->required()->unique(ignoreRecord: true),
-                Components\TextInput::make('sort_order')->numeric()->default(0),
+                Components\TextInput::make('sort_order')
+                    ->label('Порядок сортировки')
+                    ->numeric()
+                    ->default(0),
             ]);
     }
 }

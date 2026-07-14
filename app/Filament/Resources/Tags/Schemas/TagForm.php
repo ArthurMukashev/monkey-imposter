@@ -12,10 +12,13 @@ class TagForm
     {
         return $schema
             ->components([
-                Components\TextInput::make('title')->required()
+                Components\TextInput::make('title')
+                    ->label('Название')
+                    ->required()
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))),
                 Components\TextInput::make('slug')->required()->unique(ignoreRecord: true),
-                Components\ColorPicker::make('color'), // HEX-цвет
+                Components\ColorPicker::make('color')
+                    ->label('Цвет'), // HEX-цвет
             ]);
     }
 }

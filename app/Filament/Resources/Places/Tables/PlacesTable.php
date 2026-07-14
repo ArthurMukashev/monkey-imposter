@@ -15,13 +15,25 @@ class PlacesTable
     {
         return $table
             ->columns([
-                Columns\TextColumn::make('title')->searchable()->sortable(),
+                Columns\TextColumn::make('title')
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
                 Columns\BadgeColumn::make('section')
+                    ->label('Категория')
                     ->colors(['primary' => 'tourism', 'success' => 'active', 'warning' => 'gastronomy']),
-                Columns\TextColumn::make('category.title')->sortable(),
-                Columns\TextColumn::make('city.title')->sortable(),
-                Columns\IconColumn::make('is_published')->boolean(),
-                Columns\TextColumn::make('created_at')->dateTime(),
+                Columns\TextColumn::make('category.title')
+                    ->label('Название категории')
+                    ->sortable(),
+                Columns\TextColumn::make('city.title')
+                    ->label('Город')
+                    ->sortable(),
+                Columns\IconColumn::make('is_published')
+                    ->label('Опубликовано')
+                    ->boolean(),
+                Columns\TextColumn::make('created_at')
+                    ->label('Создано')
+                    ->dateTime(),
             ])
             ->filters([
                 // Фильтры: по section, city, category, is_published.
