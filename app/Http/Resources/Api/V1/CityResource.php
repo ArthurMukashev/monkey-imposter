@@ -12,6 +12,7 @@ class CityResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'title' => $this->title,
+            'sortOrder' => (int) $this->sort_order,
         ];
     }
 }

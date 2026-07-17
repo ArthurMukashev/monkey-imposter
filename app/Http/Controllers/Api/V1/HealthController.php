@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class HealthController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $source = $request->input('source', 'remote');
+        $configuredSource = config('app.api_source', 'remote');
+        $source = in_array($configuredSource, ['remote', 'local'], true) ? $configuredSource : 'remote';
         $data = [
             'status' => 'ok',
             'source' => $source,
@@ -17,9 +17,11 @@ class HealthController extends Controller
         ];
 
         if ($source === 'local') {
-            // Можно хранить время последней синхронизации в кеше или БД
-            $lastSync = cache('last_sync_time', now()->subDay()->toIso8601String());
-            $data['lastSyncAt'] = $lastSync;
+            $lastSync = cache('last_sync_time');
+
+            if (is_string($lastSync)) {
+                $data['lastSyncAt'] = $lastSync;
+            }
         }
 
         return response()->json(['data' => $data]);

@@ -43,7 +43,11 @@ class PlaceDetailedResource extends JsonResource
         return [
             'title' => $this->seo_title ?? $this->title,
             'description' => $this->seo_description ?? $this->short_description,
-            'canonicalPath' => $this->seo_canonical_path ?? '/places/'.$this->slug,
+            'canonicalPath' => $this->seo_canonical_path ?? match ($this->section) {
+                'active' => '/events/'.$this->slug,
+                'tourism' => '/routes/'.$this->slug,
+                'gastronomy' => '/gastronomy/'.$this->slug,
+            },
         ];
     }
 

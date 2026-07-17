@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\Places\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\{FileUpload,
-    Repeater,
-    Select,
-    TextInput,
-    Textarea,
-    RichEditor,
-    DatePicker,
-    TimePicker,
-    Toggle
-};
+use App\Models\Category;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class PlaceForm
 {
@@ -32,12 +32,12 @@ class PlaceForm
                             ])
                             ->required()
                             ->reactive()
-                            ->afterStateUpdated(fn(callable $set) => $set('category_id', null)), // сброс категории
+                            ->afterStateUpdated(fn (callable $set) => $set('category_id', null)), // сброс категории
                         TextInput::make('title')
                             ->label('Название')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Str::slug($state))),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Str::slug($state))),
                         TextInput::make('slug')->required()->unique(ignoreRecord: true),
                         Textarea::make('short_description')
                             ->label('Краткое описание')
@@ -54,7 +54,7 @@ class PlaceForm
                             ->relationship('category', 'title')
                             ->searchable()
                             ->required()
-                            ->options(fn(callable $get) => \App\Models\Category::where('section', $get('section'))->pluck('title', 'id')),
+                            ->options(fn (callable $get) => Category::where('section', $get('section'))->pluck('title', 'id')),
                         Select::make('city_id')
                             ->label('Город')
                             ->relationship('city', 'title')
@@ -95,7 +95,7 @@ class PlaceForm
                             ->multiple()
                             ->searchable(),
                     ])
-                    ->visible(fn(callable $get) => $get('section') === 'gastronomy'),
+                    ->visible(fn (callable $get) => $get('section') === 'gastronomy'),
 
                 Section::make('Расписание')
                     ->schema([
@@ -105,12 +105,18 @@ class PlaceForm
                         TimePicker::make('schedule.time')
                             ->label('Время')
                             ->displayFormat('H:i'),
+                        DatePicker::make('schedule.endDate')
+                            ->label('Дата окончания')
+                            ->displayFormat('Y-m-d'),
+                        TimePicker::make('schedule.endTime')
+                            ->label('Время окончания')
+                            ->displayFormat('H:i'),
                         TextInput::make('schedule.timezone')
                             ->label('Часовой пояс')
                             ->default('+05:00')
                             ->maxLength(6),
                     ])
-                    ->visible(fn(callable $get) => in_array($get('section'), ['tourism', 'active'])),
+                    ->visible(fn (callable $get) => in_array($get('section'), ['tourism', 'active'])),
 
                 Section::make('Теги')
                     ->schema([

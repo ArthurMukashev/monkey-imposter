@@ -33,7 +33,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
       POSTGRES_HOST_AUTH_METHOD: trust  # только для разработки
     ports:
-      - "5432:5432"
+      - "${DB_FORWARD_PORT:-5432}:5432"
     volumes:
       - postgis_data:/var/lib/postgresql/data
     healthcheck:

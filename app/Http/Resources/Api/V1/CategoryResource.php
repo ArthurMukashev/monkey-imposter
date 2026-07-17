@@ -14,6 +14,7 @@ class CategoryResource extends JsonResource
             'section' => $this->section,
             'title' => $this->title,
             'shortDescription' => $this->short_description,
+            'sortOrder' => (int) $this->sort_order,
         ];
     }
 }

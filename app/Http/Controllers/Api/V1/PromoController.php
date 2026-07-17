@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\PromoResource;
+use App\Http\Resources\Api\V1\PromoResourceCollection;
 use App\Models\Promo;
 use Illuminate\Http\Request;
 
@@ -32,6 +32,6 @@ class PromoController extends Controller
 
         $promos = $query->paginate($limit);
 
-        return PromoResource::collection($promos);
+        return new PromoResourceCollection($promos);
     }
 }
