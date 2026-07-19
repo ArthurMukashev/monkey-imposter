@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Support\PublicImageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PlaceDetailedResource extends JsonResource
@@ -55,7 +56,7 @@ class PlaceDetailedResource extends JsonResource
     {
         return $this->images->map(function ($image) {
             return [
-                'url' => $image->url,
+                'url' => PublicImageUrl::for($image->url),
                 'alt' => $image->alt,
                 'title' => $image->title,
                 'isCover' => (bool) $image->is_cover,

@@ -34,11 +34,13 @@ class Promo extends Model
     {
         $now = now();
         return $query->where(function ($q) use ($now) {
-            $q->where('active_from', '<=', $now)
-                ->where(function ($q2) use ($now) {
-                    $q2->whereNull('active_until')
-                        ->orWhere('active_until', '>=', $now);
-                });
+            $q->where(function ($q1) use ($now) {
+                $q1->whereNull('active_from')
+                    ->orWhere('active_from', '<=', $now);
+            })->where(function ($q2) use ($now) {
+                $q2->whereNull('active_until')
+                    ->orWhere('active_until', '>=', $now);
+            });
         });
     }
 

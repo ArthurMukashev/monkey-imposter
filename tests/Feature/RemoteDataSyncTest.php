@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class RemoteDataSyncTest extends TestCase
@@ -16,7 +17,90 @@ class RemoteDataSyncTest extends TestCase
     public function test_remote_public_contract_is_synchronized_into_local_api_models(): void
     {
         config()->set('app.remote_api_url', 'https://remote.test/api/v1');
+        Storage::fake('public');
 
+        $this->fakeRemoteApi();
+
+        $this->artisan('sync:remote-data')->assertSuccessful();
+
+        $this->assertDatabaseHas('categories', [
+            'id' => '22222222-2222-4222-8222-222222222222',
+            'slug' => 'culture',
+            'section' => 'active',
+            'short_description' => 'События культуры.',
+        ]);
+        $this->assertDatabaseHas('tags', [
+            'id' => '33333333-3333-4333-8333-333333333333',
+            'color' => '#5E548E',
+        ]);
+        $this->assertDatabaseHas('promos', [
+            'id' => '66666666-6666-4666-8666-666666666666',
+            'placement' => 'kiosk-home',
+        ]);
+
+        $place = Place::query()->findOrFail('55555555-5555-4555-8555-555555555555');
+
+        $this->assertSame('Полное описание.', $place->description_html);
+        $this->assertSame('ул. Советская, 1', $place->address);
+        $this->assertSame('21:00', $place->schedule['endTime']);
+        $this->assertSame(['33333333-3333-4333-8333-333333333333'], $place->tags()->pluck('tags.id')->all());
+        $this->assertSame(
+            ['44444444-4444-4444-8444-444444444444'],
+            $place->cuisineTypes()->pluck('cuisine_types.id')->all()
+        );
+        $placeImagePath = $this->syncedImagePath('https://images.example.test/place.jpg');
+        $promoImagePath = $this->syncedImagePath('https://images.example.test/promo.jpg');
+
+        $this->assertDatabaseHas('images', [
+            'imageable_id' => $place->id,
+            'url' => $placeImagePath,
+            'is_cover' => true,
+        ]);
+        $this->assertDatabaseHas('images', [
+            'imageable_id' => '66666666-6666-4666-8666-666666666666',
+            'url' => $promoImagePath,
+        ]);
+
+        Storage::disk('public')->assertExists($placeImagePath);
+        Storage::disk('public')->assertExists($promoImagePath);
+
+        foreach ($place->images()->pluck('url') as $url) {
+            $this->assertFalse(str_starts_with($url, 'http'), "URL изображения не локализован: {$url}");
+        }
+
+        $this->assertTrue(Cache::has('last_sync_time'));
+
+        Http::assertSent(
+            fn (Request $request): bool => $request->url() === 'https://remote.test/api/v1/places/remote-event'
+        );
+    }
+
+    public function test_repeated_sync_does_not_download_images_twice(): void
+    {
+        config()->set('app.remote_api_url', 'https://remote.test/api/v1');
+        Storage::fake('public');
+
+        $this->fakeRemoteApi();
+
+        $this->artisan('sync:remote-data')->assertSuccessful();
+        $this->artisan('sync:remote-data')->assertSuccessful();
+
+        $imageRequests = Http::recorded(
+            fn (Request $request): bool => str_starts_with($request->url(), 'https://images.example.test/')
+        );
+
+        $this->assertCount(2, $imageRequests);
+
+        $place = Place::query()->findOrFail('55555555-5555-4555-8555-555555555555');
+        $this->assertSame(1, $place->images()->count());
+        $this->assertSame(
+            $this->syncedImagePath('https://images.example.test/place.jpg'),
+            $place->images()->first()->url
+        );
+    }
+
+    private function fakeRemoteApi(): void
+    {
         Http::fake([
             'https://remote.test/api/v1/cities*' => Http::response([
                 'data' => [[
@@ -83,45 +167,16 @@ class RemoteDataSyncTest extends TestCase
                 'data' => [$this->placeListItem()],
                 'meta' => $this->meta(),
             ]),
+            // Картинки — отдельный хост, не пересекается с JSON-fake'ами API.
+            'https://images.example.test/*' => Http::response('binary-image-content', 200),
         ]);
+    }
 
-        $this->artisan('sync:remote-data')->assertSuccessful();
+    private function syncedImagePath(string $url): string
+    {
+        $extension = pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION) ?: 'jpg';
 
-        $this->assertDatabaseHas('categories', [
-            'id' => '22222222-2222-4222-8222-222222222222',
-            'slug' => 'culture',
-            'section' => 'active',
-            'short_description' => 'События культуры.',
-        ]);
-        $this->assertDatabaseHas('tags', [
-            'id' => '33333333-3333-4333-8333-333333333333',
-            'color' => '#5E548E',
-        ]);
-        $this->assertDatabaseHas('promos', [
-            'id' => '66666666-6666-4666-8666-666666666666',
-            'placement' => 'kiosk-home',
-        ]);
-
-        $place = Place::query()->findOrFail('55555555-5555-4555-8555-555555555555');
-
-        $this->assertSame('Полное описание.', $place->description_html);
-        $this->assertSame('ул. Советская, 1', $place->address);
-        $this->assertSame('21:00', $place->schedule['endTime']);
-        $this->assertSame(['33333333-3333-4333-8333-333333333333'], $place->tags()->pluck('tags.id')->all());
-        $this->assertSame(
-            ['44444444-4444-4444-8444-444444444444'],
-            $place->cuisineTypes()->pluck('cuisine_types.id')->all()
-        );
-        $this->assertDatabaseHas('images', [
-            'imageable_id' => $place->id,
-            'url' => 'https://images.example.test/place.jpg',
-            'is_cover' => true,
-        ]);
-        $this->assertTrue(Cache::has('last_sync_time'));
-
-        Http::assertSent(
-            fn (Request $request): bool => $request->url() === 'https://remote.test/api/v1/places/remote-event'
-        );
+        return 'sync/'.hash('sha256', $url).'.'.$extension;
     }
 
     private function meta(): array

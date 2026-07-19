@@ -151,6 +151,8 @@ class PlaceForm
                                 FileUpload::make('url')
                                     ->label('URL')
                                     ->image()
+                                    ->disk('public')
+                                    ->visibility('public')
                                     ->directory('places')
                                     ->required(),
                                 TextInput::make('alt')

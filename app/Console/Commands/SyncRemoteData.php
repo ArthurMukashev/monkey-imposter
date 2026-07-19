@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
 
@@ -267,7 +268,7 @@ class SyncRemoteData extends Command
         }
 
         $promo->image()->updateOrCreate([], [
-            'url' => $image['url'],
+            'url' => $this->localizeImageUrl($image['url'] ?? null),
             'alt' => $image['alt'],
             'title' => $image['title'],
             'is_cover' => true,
@@ -354,8 +355,12 @@ class SyncRemoteData extends Command
         $syncedUrls = [];
 
         foreach ($images as $index => $image) {
+            // Подмена на локальный путь ДО updateOrCreate/whereNotIn:
+            // повторный синк совпадает по url и не качает файлы заново.
+            $url = $this->localizeImageUrl($image['url'] ?? null);
+
             $place->images()->updateOrCreate(
-                ['url' => $image['url']],
+                ['url' => $url],
                 [
                     'alt' => $image['alt'],
                     'title' => $image['title'],
@@ -363,11 +368,33 @@ class SyncRemoteData extends Command
                     'sort_order' => $image['sortOrder'] ?? $index,
                 ]
             );
-            $syncedUrls[] = $image['url'];
+            $syncedUrls[] = $url;
         }
 
         $place->images()
             ->when($syncedUrls !== [], fn ($query) => $query->whereNotIn('url', $syncedUrls))
             ->delete();
+    }
+
+    private function localizeImageUrl(mixed $url): string
+    {
+        if (! is_string($url) || $url === '') {
+            throw new RuntimeException('Изображение без url.');
+        }
+
+        // Уже локальный путь (повторный синк) — не скачиваем.
+        if (! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        $extension = pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION) ?: 'jpg';
+        $path = 'sync/'.hash('sha256', $url).'.'.$extension;
+
+        if (! Storage::disk('public')->exists($path)) {
+            $contents = Http::timeout(20)->retry(2, 250)->get($url)->throw()->body();
+            Storage::disk('public')->put($path, $contents);
+        }
+
+        return $path;
     }
 }

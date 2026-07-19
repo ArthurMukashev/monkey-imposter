@@ -73,6 +73,8 @@ class PromoForm
                         FileUpload::make('image.url')
                             ->label('URL')
                             ->image()
+                            ->disk('public')
+                            ->visibility('public')
                             ->directory('promos')
                             ->required(),
                         TextInput::make('image.alt')

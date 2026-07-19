@@ -23,6 +23,33 @@ services:
     networks:
       - laravel-network
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: laravel_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-laravel}
+      - DB_USERNAME=${DB_USERNAME:-laravel}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REMOTE_API_URL=${REMOTE_API_URL:-}
+      - API_SOURCE=${API_SOURCE:-local}
+    networks:
+      - laravel-network
+
   db:
     image: postgis/postgis:16-3.4
     container_name: laravel_postgis

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Place;
+use App\Models\Promo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -59,6 +60,25 @@ class PublicApiContractTest extends TestCase
 
         $this->getJson('/api/v1/promos?placement=kiosk-home')
             ->assertJsonPath('data.0.target.href', '/routes/nacionalnaya-derevnya');
+    }
+
+    public function test_promo_with_null_active_from_is_active(): void
+    {
+        Promo::query()->delete();
+
+        Promo::create([
+            'placement' => 'home',
+            'title' => 'Промо без дат активности',
+            'teaser' => 'Должно считаться активным сразу.',
+            'target_type' => 'section',
+            'target_slug' => 'active',
+            'active_from' => null,
+            'active_until' => null,
+        ]);
+
+        $this->getJson('/api/v1/promos?placement=home')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function test_local_health_reports_configured_source_and_sync_timestamp(): void

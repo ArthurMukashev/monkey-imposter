@@ -1,0 +1,4 @@
+# Симлинк на storage создаётся внутри контейнера командой `php artisan storage:link`.
+# В Windows-чекауте это абсолютный linux-симлинк, который ломает передачу build context
+# (BuildKit: invalid file request public/storage).
+public/storage

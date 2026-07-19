@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Support\PublicImageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PlaceResource extends JsonResource
@@ -30,7 +31,7 @@ class PlaceResource extends JsonResource
         $cover = $this->images?->firstWhere('is_cover', true);
         if ($cover) {
             return [
-                'url' => $cover->url,
+                'url' => PublicImageUrl::for($cover->url),
                 'alt' => $cover->alt,
                 'title' => $cover->title,
                 'isCover' => $cover->is_cover,

@@ -95,7 +95,15 @@ docker-compose exec app ./create-filament-user.sh
 docker-compose exec app php artisan migrate
 ```
 
-### 6. Дополнительные команды
+### 6. Создание символической ссылки на публичное хранилище
+
+Изображения (загрузки из админ-панели и файлы, скачанные синхронизацией) лежат в `storage/app/public` и должны быть доступны по URL `/storage/...`:
+
+```bash
+docker-compose exec app php artisan storage:link
+```
+
+### 7. Дополнительные команды
 
 - Остановка контейнеров: `docker-compose down`
 - Просмотр логов: `docker-compose logs -f`

@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\Place;
+use App\Support\PublicImageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PromoResource extends JsonResource
@@ -32,7 +33,7 @@ class PromoResource extends JsonResource
     {
         if ($this->relationLoaded('image') && $this->image) {
             return [
-                'url' => $this->image->url,
+                'url' => PublicImageUrl::for($this->image->url),
                 'alt' => $this->image->alt,
                 'title' => $this->image->title,
                 'isCover' => (bool) $this->image->is_cover,
