@@ -13,10 +13,19 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 
 class CuisineTypeResource extends Resource
 {
     protected static ?string $model = CuisineType::class;
+    protected static ?string $pluralModelLabel = 'Типы кухней';
+    protected static ?string $modelLabel = 'Тип кухни';
+    protected static bool $hasTitleCaseModelLabel = false;
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return Heroicon::Cake;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

@@ -13,10 +13,18 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 
 class PlaceResource extends Resource
 {
     protected static ?string $model = Place::class;
+    protected static ?string $pluralModelLabel = 'Места';
+    protected static ?string $modelLabel = 'Место';
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return Heroicon::MapPin;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

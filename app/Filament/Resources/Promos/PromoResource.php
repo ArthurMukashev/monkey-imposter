@@ -13,10 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 
 class PromoResource extends Resource
 {
     protected static ?string $model = Promo::class;
+    protected static ?string $pluralModelLabel = 'Промо';
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return Heroicon::Megaphone;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

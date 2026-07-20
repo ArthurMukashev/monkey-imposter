@@ -13,10 +13,18 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 
 class TagResource extends Resource
 {
     protected static ?string $model = Tag::class;
+    protected static ?string $pluralModelLabel = 'Теги';
+    protected static ?string $modelLabel = 'Тег';
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return Heroicon::Tag;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
