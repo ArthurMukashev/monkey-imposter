@@ -48,7 +48,6 @@ class PromoForm
                     ->label('Тизер')
                     ->required(),
 
-                // Target
                 Select::make('target_type')
                     ->label('Тип объекта')
                     ->options([
@@ -56,9 +55,8 @@ class PromoForm
                         'section' => 'Раздел',
                         'external' => 'Внешняя ссылка',
                     ])
+                    ->required()
                     ->reactive(),
-
-                // Условные поля для каждого типа
                 TextInput::make('target_slug')
                     ->visible(fn(callable $get) => in_array($get('target_type'), ['place', 'section']))
                     ->required(fn(callable $get) => in_array($get('target_type'), ['place', 'section'])),
@@ -67,20 +65,28 @@ class PromoForm
                     ->url()
                     ->required(fn(callable $get) => $get('target_type') === 'external'),
 
-                // Изображение
                 Section::make('Изображение')
                     ->schema([
-                        FileUpload::make('image.url')
-                            ->label('URL')
+                        FileUpload::make('image_file')
+                            ->label('Загрузить изображение')
                             ->image()
                             ->disk('public')
-                            ->visibility('public')
                             ->directory('promos')
-                            ->required(),
-                        TextInput::make('image.alt')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->maxSize(5120)
+                            ->required()
+                            ->getUploadedFileUsing(function ($record, $file) {
+                                // При редактировании показываем существующее изображение
+                                if ($record && $record->image) {
+                                    return $record->image->url;
+                                }
+                                return null;
+                            }),
+                        TextInput::make('image_alt')
                             ->label('Альт (отображать, если изображение не загрузилось)')
                             ->required(),
-                        TextInput::make('image.title')
+                        TextInput::make('image_title')
                             ->label('Название')
                             ->required(),
                     ]),
