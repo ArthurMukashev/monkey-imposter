@@ -40,6 +40,25 @@ class PublicApiContractTest extends TestCase
             ->assertJsonPath('data.1.category.slug', 'culture');
     }
 
+    public function test_places_apply_multiple_categories_with_or_semantics(): void
+    {
+        $response = $this->getJson('/api/v1/places?section=active&category=culture,festivali-i-yarmarki&limit=20');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('meta.page', 1)
+            ->assertJsonPath('meta.limit', 20)
+            ->assertJsonMissingPath('links');
+
+        $slugs = collect($response->json('data'))->pluck('slug')->all();
+        $categories = collect($response->json('data'))->pluck('category.slug')->unique()->sort()->values()->all();
+
+        $this->assertContains('orenburgskaya-filarmoniya', $slugs);
+        $this->assertContains('teatr-muzykalnoy-komedii', $slugs);
+        $this->assertContains('den-goroda-orenburg', $slugs);
+        $this->assertSame(['culture', 'festivali-i-yarmarki'], $categories);
+    }
+
     public function test_reference_and_promo_lists_use_the_same_public_envelope(): void
     {
         foreach ([
@@ -60,6 +79,24 @@ class PublicApiContractTest extends TestCase
 
         $this->getJson('/api/v1/promos?placement=kiosk-home')
             ->assertJsonPath('data.0.target.href', '/routes/nacionalnaya-derevnya');
+    }
+
+    public function test_reference_directory_items_expose_public_labels_not_internal_only_data(): void
+    {
+        $this->getJson('/api/v1/cities')
+            ->assertOk()
+            ->assertJsonPath('data.0.slug', 'orenburg')
+            ->assertJsonPath('data.0.title', 'Оренбург')
+            ->assertJsonMissingPath('data.0.created_at');
+
+        $this->getJson('/api/v1/categories?section=active')
+            ->assertOk()
+            ->assertJsonPath('data.0.section', 'active')
+            ->assertJsonStructure(['data' => [['id', 'slug', 'section', 'title']]]);
+
+        $this->getJson('/api/v1/tags')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'slug', 'title']]]);
     }
 
     public function test_promo_with_null_active_from_is_active(): void

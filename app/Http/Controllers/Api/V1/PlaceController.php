@@ -34,8 +34,16 @@ class PlaceController extends Controller
             $query->whereHas('city', fn ($q) => $q->where('slug', $request->city));
         }
 
-        if ($request->has('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
+        if ($request->filled('category')) {
+            $categorySlugs = collect(explode(',', (string) $request->category))
+                ->map(fn (string $slug): string => trim($slug))
+                ->filter(fn (string $slug): bool => $slug !== '')
+                ->unique()
+                ->values();
+
+            if ($categorySlugs->isNotEmpty()) {
+                $query->whereHas('category', fn ($q) => $q->whereIn('slug', $categorySlugs->all()));
+            }
         }
 
         if ($request->has('tags')) {
